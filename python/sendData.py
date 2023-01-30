@@ -3,6 +3,8 @@ import json
 import serial
 
 # Constantes
+
+# API
 URL = "https://demo.thingsboard.io/api/v1/jJnRqwuzhBWo0iIeRGgD/telemetry"
 HEAD = {"Content-Type": "application/json"}
 # conexion con puertos seriales
