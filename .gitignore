@@ -1,3 +1,9 @@
+# Compilado arduino
 *.hex
+
+# Respaldos de Proyecto en proteus
 *.workspace
 *.pdsbak
+
+# Entorno virtual python
+env/
