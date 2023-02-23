@@ -1,57 +1,53 @@
 import requests
-import json
 import serial
+import time
 
 # Constantes
-
-# API
-URL = "https://demo.thingsboard.io/api/v1/jJnRqwuzhBWo0iIeRGgD/telemetry"
+URL = ""
 HEAD = {"Content-Type": "application/json"}
-# conexion con puertos seriales
-GAS = serial.Serial('COM5', 9600, timeout=1)
-DISTANCE = serial.Serial('COM6', 9600, timeout=1)
-HEARTBEAT = serial.Serial('COM7', 9600, timeout=1)
-TEMPERATURE = serial.Serial('COM8', 9600, timeout=1)
+
+# Puertos seriales
+sensors = {
+    "gas": serial.Serial('COM5', 9600, timeout=1),
+    "distance": serial.Serial('COM6', 9600, timeout=1),
+    "heartbeat": serial.Serial('COM7', 9600, timeout=1),
+    "temperature": serial.Serial('COM8', 9600, timeout=1)
+}
 
 
 def genBody():
     body = {}
-    distance, gas, heartbit, temperature = getData()
+    data = getData()
 
-    if (distance != 0):
-        body["Distancia"] = distance
-
-    if (gas != 0):
-        body["CO2"] = gas
-
-    if (heartbit != 0):
-        body["Latidos"] = heartbit
-
-    if (temperature != 0):
-        body["Temperatura"] = temperature
+    for key, value in data.items():
+        if value != 0:
+            body[key] = value
 
     print(body)
     return body
 
 
 def readSensor(sensor):
-    data = sensor.readline().decode()
-    if data == "":
+    try:
+        data = sensor.readline().decode().strip()
+        return float(data) if data else 0
+    except:
         return 0
-    else:
-        return float(data)
-    # return 0 if sensor.readline().decode() == "" else float(sensor.readline().decode())
 
 
 def getData():
-    gas = readSensor(GAS)
-    distancia = readSensor(DISTANCE)/10
-    latidos = readSensor(HEARTBEAT)
-    temperatura = readSensor(TEMPERATURE)
-    return distancia, gas, latidos, temperatura
+    data = {}
+    for key, sensor in sensors.items():
+        data[key] = readSensor(sensor)
+    return data
 
 
 if __name__ == "__main__":
     while True:
-        r = requests.post(URL, json.dumps(genBody()), HEAD)
-        print(f"Status ->{r.status_code}")
+        try:
+            r = requests.post(URL, json=genBody(), headers=HEAD)
+            print(f"Status ->{r.status_code}")
+        except Exception as e:
+            print(f"Error: {str(e)}")
+
+        time.sleep(1)
